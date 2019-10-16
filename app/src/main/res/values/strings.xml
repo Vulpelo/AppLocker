@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">App Locker</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="general_header">General</string>
+    <string name="password_title">Set new password</string>
+    <string name="set_new_password">Set new password</string>
+    <string name="new_password">New password</string>
+    <string name="re_new_password">Re-enter new password</string>
+    <string name="old_password">Old password</string>
+    <string name="confirm">Confirm</string>
+    <string name="language_title">Language</string>
+</resources>
