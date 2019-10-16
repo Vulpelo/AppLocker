@@ -1,6 +1,5 @@
 package com.example.cwiczenie1;
 
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -10,11 +9,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +22,9 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 
     PackageManager pm;
     List<ApplicationInfo> apps;
+
+    ArrayList<AppElement> appElementArrayList;
+    AppElementAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +52,10 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
             }
         }
 
-        ArrayList<AppElement> appElementArrayList = new ArrayList<>();
-        AppElementAdapter adapter = new AppElementAdapter(this, appElementArrayList);
+        /* **************** */
+        /* Setting ListView */
+        appElementArrayList = new ArrayList<>();
+        adapter = new AppElementAdapter(this, appElementArrayList);
 
         for (ApplicationInfo appInfo: installedApps) {
             AppElement appElement = new AppElement(appInfo.processName);
@@ -78,11 +80,17 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 //                }
 //            });
 
-            //appsLayout.addView(but);
         }
 
         ListView listView = (ListView) findViewById(R.id.listViewApps);
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getBaseContext(), adapter.getItem(position).name, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
