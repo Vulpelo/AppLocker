@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -30,11 +31,9 @@ public class AppElementAdapter extends ArrayAdapter<AppElement> {
 
         // Lookup view for data population
         TextView appName = (TextView) convertView.findViewById(R.id.app_name);
-//        TextView tvHome = (TextView) convertView.findViewById(R.id.tvHome);
 
         // Populate the data into the template view using the data object
         appName.setText(appElement.name);
-//        tvHome.setText(user.hometown);
 
         // Return the completed view to render on screen
         return convertView;
