@@ -27,28 +27,129 @@ import java.util.List;
 
 public class AppsList extends FragmentActivity implements BlankFragment.OnFragmentInteractionListener {
 
-    FragmentManager fm;
+    AppLockerDbHelper dbHelper;
 
+    FragmentManager fm;
     PackageManager pm;
+
     List<ApplicationInfo> apps;
 
     ArrayList<AppElement> appElementArrayList;
     AppElementAdapter adapter;
+
+    int appElementSelected = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apps_list);
 
-        AppLockerDbHelper dbHelper = new AppLockerDbHelper(getBaseContext());
-
+        dbHelper = new AppLockerDbHelper(getBaseContext());
         pm = getPackageManager();
         apps = pm.getInstalledApplications(0);
-
         fm = getFragmentManager();
+        appElementArrayList = new ArrayList<>();
+        adapter = new AppElementAdapter(this, appElementArrayList);
 
+        List<ApplicationInfo> installedApps = getAppsOnPhone();
+        updateAppElementsAdapterWithDb(adapter, installedApps);
+
+        ListView listView = (ListView) findViewById(R.id.listViewApps);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                appElementSelected = position;
+                AppElement appElement = adapter.getItem(position);
+
+                getSupportFragmentManager().beginTransaction().replace(R.id.appFragment, BlankFragment.newInstance(appElement));
+
+                View fragment = findViewById(R.id.appFragment);
+
+                TextView appFragmentName = fragment.findViewById(R.id.appFragmentName);
+                Switch protectedSwitch = fragment.findViewById(R.id.protectedSwitch);
+
+                protectedSwitch.setChecked(appElement.isProtected);
+                appFragmentName.setText(appElement.name);
+            }
+        });
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        Toast.makeText(getBaseContext(), "O hej00", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        dbHelper.close();
+        super.onDestroy();
+    }
+
+    public void onProtectedSwitchChange(View view) {
+        Switch aSwitch = (Switch)view;
+
+        AppElement mAppElement = adapter.getItem(appElementSelected);
+
+        int val = 0;
+        if (aSwitch.isChecked()) {
+            val = 1;
+            mAppElement.isProtected = true;
+        } else {
+            val = 0;
+            mAppElement.isProtected = false;
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("PROTECTED", val);
+
+        String[] selectionArgs = { String.valueOf(mAppElement.id) };
+        int count = db.update(
+                "APPS",
+                values,
+                "ID_APP LIKE ?",
+                selectionArgs);
+    }
+
+    private void updateAppElementsAdapterWithDb(AppElementAdapter adapter, List<ApplicationInfo> installedApps) {
+        String[] projection = {
+                "ID_APP",
+                "APP_NAME",
+                "PROTECTED"
+        };
+
+        SQLiteDatabase dbR = dbHelper.getReadableDatabase();
+        for (ApplicationInfo appInfo: installedApps) {
+            AppElement appElement = new AppElement(appInfo.processName);
+
+            /* Get data from database */
+            String[] parameters = {appElement.name};
+            Cursor cursor = dbR.query("APPS", projection, "APP_NAME = ?", parameters, null, null, null, "1");
+            // getting first matching row
+            if (cursor.moveToNext()) {
+                appElement.id = cursor.getLong(cursor.getColumnIndexOrThrow("ID_APP"));
+                appElement.isProtected = cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
+
+                Log.w("databaseRead", appElement.name + " " + (appElement.id) + " " + appElement.isProtected);
+            } else {
+                // no data was gotten then insert appElement to db
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                ContentValues values = new ContentValues();
+                values.put("APP_NAME", appElement.name);
+                values.put("PROTECTED", 0);
+                appElement.id = db.insert("APPS", null, values);
+            }
+            adapter.add(appElement);
+        }
+    }
+
+    private List<ApplicationInfo> getAppsOnPhone() {
         List<ApplicationInfo> installedApps = new ArrayList<ApplicationInfo>();
-
         for(ApplicationInfo app : apps) {
             //checks for flags; if flagged, check if updated system app
             if((app.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
@@ -62,83 +163,6 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
                 installedApps.add(app);
             }
         }
-
-        /* **************** */
-        /* Setting ListView */
-        appElementArrayList = new ArrayList<>();
-        adapter = new AppElementAdapter(this, appElementArrayList);
-
-        SQLiteDatabase dbR = dbHelper.getReadableDatabase();
-        String[] projection = {
-                "ID_APP",
-                "APP_NAME",
-                "PROTECTED"
-        };
-
-        for (ApplicationInfo appInfo: installedApps) {
-            AppElement appElement = new AppElement(appInfo.processName);
-
-
-            /* Get data from database */
-            String[] parameters = {appElement.name};
-            Cursor cursor = dbR.query("APPS", projection, "APP_NAME = ?", parameters, null, null, null, "1");
-            // getting first matching row
-            if (cursor.moveToNext()) {
-                appElement.id = cursor.getLong(cursor.getColumnIndexOrThrow("ID_APP"));
-                appElement.isProtected = cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
-            } else {
-                // no data was gotten then insert appElement to db
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-                ContentValues values = new ContentValues();
-                values.put("APP_NAME", appElement.name);
-                values.put("PROTECTED", 0);
-                appElement.id = db.insert("APPS", null, values);
-            }
-
-            adapter.add(appElement);
-        }
-
-        /* Reading from database */
-        Cursor cursor = dbR.query("APPS", projection, null, null, null, null, null);
-        List itemIds = new ArrayList<>();
-        while(cursor.moveToNext()) {
-            long itemId = cursor.getLong(
-                    cursor.getColumnIndexOrThrow("ID_APP"));
-            itemIds.add(itemId);
-            Log.w("database", String.valueOf(itemId).toString());
-        }
-        cursor.close();
-
-        ListView listView = (ListView) findViewById(R.id.listViewApps);
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                AppElement appElement = adapter.getItem(position);
-
-                Toast.makeText(getBaseContext(), appElement.name, Toast.LENGTH_SHORT).show();
-
-                View appFragView = findViewById(R.id.appFragment);
-                TextView appFragmentName = appFragView.findViewById(R.id.appFragmentName);
-                Switch protectedSwitch = appFragView.findViewById(R.id.protectedSwitch);
-
-                protectedSwitch.setChecked(appElement.isProtected);
-                appFragmentName.setText(appElement.name);
-            }
-        });
+        return installedApps;
     }
-
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-        Toast.makeText(getBaseContext(), "O hej00", Toast.LENGTH_SHORT).show();
-    }
-
-    public void switchProtected(View view) {
-        // TODO: switch function somewhere. Update data in SQLite
-        //Toast.makeText(getBaseContext(), "O hej0022", Toast.LENGTH_SHORT).show();
-    }
-
 }
