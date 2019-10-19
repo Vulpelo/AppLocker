@@ -1,51 +1,87 @@
 package com.example.cwiczenie1;
 
-import android.app.ActivityManager;
 import android.app.Service;
-import android.content.ComponentName;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import java.sql.Time;
+import com.example.cwiczenie1.database.AppDatabase;
+import com.example.cwiczenie1.database.AppLockerDbHelper;
+
 import java.util.List;
+import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 public class AppLockService extends Service {
     private Toast toast;
     private Timer timer;
     private TimerTask timerTask;
 
-    private class FrequentTask extends TimerTask {
+    private AppLockerDbHelper dbHelper;
+
+    private class LockerTask extends TimerTask {
         @Override
         public void run() {
-            String foregroundAppName = currentInForeground();
-
-            if (appToLock(foregroundAppName)) {
+            String currentForegroundProcess = currentInForeground();
+            if (!currentForegroundProcess.isEmpty() && appToBeLocked(currentForegroundProcess)) {
                 // TODO: Lock screen
             }
+        }
 
-            Log.w("Service", "Still running");
+        private boolean appToBeLocked(String packageName) {
+            Log.w("System", currentInForeground());
+            AppDatabase appDatabase = new AppDatabase(getBaseContext());
+            AppElement appElement = appDatabase.getByName(packageName);
+            if (appElement.isProtected) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         private String currentInForeground() {
-            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfo = am.getRunningAppProcesses();
-
-            for (ActivityManager.RunningAppProcessInfo rpi: runningAppProcessInfo) {
-                if(rpi.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    return rpi.processName;
+            String currentApp = "";
+            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long time = System.currentTimeMillis();
+            List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
+            if (appList != null && appList.size() > 0) {
+                SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+                for (UsageStats usageStats : appList) {
+                    mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+                }
+                if (!mySortedMap.isEmpty()) {
+                    currentApp = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                 }
             }
-            return null;
+            return currentApp;
         }
 
         private boolean appToLock(String processName) {
             // TODO: look to SQLite if given processName is listed
+            SQLiteDatabase dbR = dbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "ID_APP",
+                    "APP_NAME",
+                    "PROTECTED"
+            };
+
+            String[] parameters = { processName };
+            Cursor cursor = dbR.query("APPS", projection, "APP_NAME = ?", parameters, null, null, null, "1");
+            // getting first matching row
+            if (cursor.moveToNext()) {
+                return cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
+            }
+
             return false;
         }
 
@@ -60,6 +96,7 @@ public class AppLockService extends Service {
 
     }
 
+
     public AppLockService() {
     }
 
@@ -72,17 +109,15 @@ public class AppLockService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.w("Service", "Create");
+        dbHelper = new AppLockerDbHelper(getBaseContext());
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.w("Service", "StartCommand");
-
         clearTimerSchedule();
-        timerTask = new FrequentTask();
+        timerTask = new LockerTask();
         timer = new Timer();
-        timer.scheduleAtFixedRate(timerTask, 10000, 2000);
+        timer.scheduleAtFixedRate(timerTask, 1000, 10);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -96,7 +131,6 @@ public class AppLockService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.w("Service", "Destroy");
         clearTimerSchedule();
         super.onDestroy();
     }

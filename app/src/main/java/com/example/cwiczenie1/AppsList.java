@@ -135,7 +135,8 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
                 appElement.isProtected = cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
 
                 Log.w("databaseRead", appElement.name + " " + (appElement.id) + " " + appElement.isProtected);
-            } else {
+            }
+            else {
                 // no data was gotten then insert appElement to db
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
 

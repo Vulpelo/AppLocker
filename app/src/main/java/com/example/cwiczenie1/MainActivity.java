@@ -1,17 +1,26 @@
 package com.example.cwiczenie1;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
+import android.Manifest;
+import android.app.AppOpsManager;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.cwiczenie1.database.AppDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,12 +45,25 @@ public class MainActivity extends AppCompatActivity {
         buttonAppList = (Button)findViewById(R.id.buttonLockApps);
         buttonAppList.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                Intent activityChangeIntent = new Intent(view.getContext(), AppsList.class);
-                startActivity(activityChangeIntent);
+                // Checking if PACKAGE_USAGE_STATS was granted by the user
+                AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+                int mode = appOps.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), getPackageName());
+                if (mode == AppOpsManager.MODE_ALLOWED) {
+                    // is granted then list all apps
+                    Intent activityChangeIntent = new Intent(view.getContext(), AppsList.class);
+                    startActivity(activityChangeIntent);
+                }
+                else {
+                    // Permission is not granted
+                    Intent s = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                    startActivity(s);
+
+                    Log.w("System", "NO PERMISSION");
+                }
             }
         });
 
-        Log.w("Cwiczenie1", "Hello");
+        AppDatabase appDatabase = new AppDatabase(this);
 
         // Starting lock service
         Intent service = new Intent(this, AppLockService.class);
