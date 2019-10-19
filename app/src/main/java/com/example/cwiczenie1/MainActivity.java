@@ -78,11 +78,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void confirmButton(View view) {
-
         String oldPass = ((EditText)dialog.findViewById(R.id.oldPasswordEditText)).getText().toString();
         String newPass = ((EditText)dialog.findViewById(R.id.newPasswordEditText)).getText().toString();
         String reNewPass = ((EditText)dialog.findViewById(R.id.reNewPasswordEditText)).getText().toString();
-
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         String realOldVal = settings.getString("PASSWORD", "");
@@ -107,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void quickMessage(String message) {
-        Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
-        toast.show();
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

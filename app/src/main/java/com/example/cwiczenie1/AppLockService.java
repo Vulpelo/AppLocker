@@ -1,5 +1,6 @@
 package com.example.cwiczenie1;
 
+import android.app.Dialog;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
@@ -25,27 +26,45 @@ public class AppLockService extends Service {
     private Toast toast;
     private Timer timer;
     private TimerTask timerTask;
+    Intent activityChangeIntent;
+
+    String lastToLockApp = "";
+    static boolean passwordCorrect = false;
+    boolean lockDialogNotOpened = true;
+
 
     private AppLockerDbHelper dbHelper;
 
     private class LockerTask extends TimerTask {
+
         @Override
         public void run() {
-            String currentForegroundProcess = currentInForeground();
-            if (!currentForegroundProcess.isEmpty() && appToBeLocked(currentForegroundProcess)) {
-                // TODO: Lock screen
+            String currentToLockForegroundProcess  = currentInForeground();
+            if (!currentToLockForegroundProcess .isEmpty() && appToBeLocked(currentToLockForegroundProcess )) {
+                // not the same foreground app so reset
+                if (!currentToLockForegroundProcess.contentEquals(lastToLockApp)) {
+                    passwordCorrect = false;
+                    lastToLockApp = currentToLockForegroundProcess ;
+                }
+                // the same app or different app
+                // password wasn't entered correctly last time for given app
+                if (!passwordCorrect) {
+                    if (lockDialogNotOpened) {
+                        lockDialogNotOpened = false;
+                        startActivity(activityChangeIntent);
+                    }
+                } else {
+                    lockDialogNotOpened = true;
+                }
+            } else {
+                lockDialogNotOpened = true;
             }
         }
 
         private boolean appToBeLocked(String packageName) {
-            Log.w("System", currentInForeground());
             AppDatabase appDatabase = new AppDatabase(getBaseContext());
             AppElement appElement = appDatabase.getByName(packageName);
-            if (appElement.isProtected) {
-                return true;
-            } else {
-                return false;
-            }
+            return appElement.isProtected;
         }
 
         private String currentInForeground() {
@@ -64,36 +83,6 @@ public class AppLockService extends Service {
             }
             return currentApp;
         }
-
-        private boolean appToLock(String processName) {
-            // TODO: look to SQLite if given processName is listed
-            SQLiteDatabase dbR = dbHelper.getReadableDatabase();
-
-            String[] projection = {
-                    "ID_APP",
-                    "APP_NAME",
-                    "PROTECTED"
-            };
-
-            String[] parameters = { processName };
-            Cursor cursor = dbR.query("APPS", projection, "APP_NAME = ?", parameters, null, null, null, "1");
-            // getting first matching row
-            if (cursor.moveToNext()) {
-                return cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
-            }
-
-            return false;
-        }
-
-        public void confirmPassword(View view) {
-            // TODO: pass not correct
-            // leave dialog on top
-
-            // TODO: pass correct
-            // dismiss
-            return;
-        }
-
     }
 
 
@@ -109,6 +98,9 @@ public class AppLockService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        activityChangeIntent = new Intent( this, PasswordEnter.class);
+        activityChangeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         dbHelper = new AppLockerDbHelper(getBaseContext());
     }
 
