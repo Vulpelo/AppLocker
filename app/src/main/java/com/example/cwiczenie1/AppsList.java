@@ -20,6 +20,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.cwiczenie1.database.AppDatabase;
 import com.example.cwiczenie1.database.AppLockerDbHelper;
 
 import java.util.ArrayList;
@@ -92,58 +93,21 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
         Switch aSwitch = (Switch)view;
 
         AppElement mAppElement = adapter.getItem(appElementSelected);
+        mAppElement.isProtected = aSwitch.isChecked();
 
-        int val = 0;
-        if (aSwitch.isChecked()) {
-            val = 1;
-            mAppElement.isProtected = true;
-        } else {
-            val = 0;
-            mAppElement.isProtected = false;
-        }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put("PROTECTED", val);
-
-        String[] selectionArgs = { String.valueOf(mAppElement.id) };
-        int count = db.update(
-                "APPS",
-                values,
-                "ID_APP LIKE ?",
-                selectionArgs);
+        AppDatabase appDatabase = new AppDatabase(this);
+        appDatabase.updateElement(mAppElement);
     }
 
     private void updateAppElementsAdapterWithDb(AppElementAdapter adapter, List<ApplicationInfo> installedApps) {
-        String[] projection = {
-                "ID_APP",
-                "APP_NAME",
-                "PROTECTED"
-        };
+        AppDatabase appDatabase = new AppDatabase(this);
 
-        SQLiteDatabase dbR = dbHelper.getReadableDatabase();
         for (ApplicationInfo appInfo: installedApps) {
-            AppElement appElement = new AppElement(appInfo.processName);
+            AppElement appElement = appDatabase.getByName(appInfo.processName);
 
-            /* Get data from database */
-            String[] parameters = {appElement.name};
-            Cursor cursor = dbR.query("APPS", projection, "APP_NAME = ?", parameters, null, null, null, "1");
-            // getting first matching row
-            if (cursor.moveToNext()) {
-                appElement.id = cursor.getLong(cursor.getColumnIndexOrThrow("ID_APP"));
-                appElement.isProtected = cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
-
-                Log.w("databaseRead", appElement.name + " " + (appElement.id) + " " + appElement.isProtected);
-            }
-            else {
-                // no data was gotten then insert appElement to db
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-                ContentValues values = new ContentValues();
-                values.put("APP_NAME", appElement.name);
-                values.put("PROTECTED", 0);
-                appElement.id = db.insert("APPS", null, values);
+            if (appElement == null) {
+                appElement = new AppElement(appInfo.processName);
+                appElement.id = appDatabase.insertElement(appElement);
             }
             adapter.add(appElement);
         }

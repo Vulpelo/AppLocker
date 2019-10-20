@@ -8,6 +8,8 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,7 +21,7 @@
         <activity android:name=".PasswordChange" />
 
         <service
-            android:name=".AppLockService"
+            android:name=".Services.AppLockService"
             android:enabled="true"
             android:exported="true" />
 

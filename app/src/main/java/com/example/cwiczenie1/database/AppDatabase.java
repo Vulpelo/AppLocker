@@ -15,7 +15,9 @@ public class AppDatabase {
     private static final String[] projection = {
             "ID_APP",
             "APP_NAME",
-            "PROTECTED"
+            "PROTECTED",
+            "RESET_WHEN",
+            "ENTERED_PASS"
     };
 
     public AppDatabase(Context context) {
@@ -36,7 +38,51 @@ public class AppDatabase {
             appElement = new AppElement(name);
             appElement.id = cursor.getLong(cursor.getColumnIndexOrThrow("ID_APP"));
             appElement.isProtected = cursor.getInt(cursor.getColumnIndexOrThrow("PROTECTED")) > 0;
+            appElement.resetWhen = ResetWhen.values()[
+                    cursor.getInt(cursor.getColumnIndexOrThrow("RESET_WHEN"))
+                    ];
+            appElement.enteredPass = cursor.getInt(cursor.getColumnIndexOrThrow("ENTERED_PASS")) > 0;
         }
         return appElement;
+    }
+
+    public long updateElement(AppElement appElement) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("PROTECTED", appElement.isProtected ? 1:0);
+        values.put("ENTERED_PASS", appElement.enteredPass ? 1:0);
+        values.put("RESET_WHEN", appElement.resetWhen.ordinal());
+
+        String[] selectionArgs = { String.valueOf(appElement.id) };
+        return db.update(
+                "APPS",
+                values,
+                "ID_APP LIKE ?",
+                selectionArgs);
+    }
+
+    public long insertElement(AppElement appElement) {
+        // no data was gotten then insert appElement to db
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("APP_NAME", appElement.name);
+        values.put("PROTECTED", 0);
+        values.put("ENTERED_PASS", appElement.enteredPass ? 1:0);
+        values.put("RESET_WHEN", appElement.resetWhen.ordinal());
+        return db.insert("APPS", null, values);
+    }
+
+    public void resetEnteredPassword() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("ENTERED_PASS", 0);
+        db.update(
+                "APPS",
+                values,
+                null,
+                null);
     }
 }

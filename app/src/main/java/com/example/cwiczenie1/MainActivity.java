@@ -1,17 +1,13 @@
 package com.example.cwiczenie1;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
-import android.Manifest;
 import android.app.AppOpsManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -20,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.cwiczenie1.Services.AppLockService;
 import com.example.cwiczenie1.database.AppDatabase;
 
 public class MainActivity extends AppCompatActivity {

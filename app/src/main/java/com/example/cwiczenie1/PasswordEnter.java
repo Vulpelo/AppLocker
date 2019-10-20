@@ -9,12 +9,18 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.cwiczenie1.Services.AppLockService;
+import com.example.cwiczenie1.database.AppDatabase;
+
 public class PasswordEnter extends AppCompatActivity {
+
+    AppElement appElement = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_enter);
+        appElement = AppLockService.appActualToLockElement;
     }
 
     public void confirmButton(View view) {
@@ -24,11 +30,14 @@ public class PasswordEnter extends AppCompatActivity {
         String realVal = settings.getString("PASSWORD", "");
 
         if (oldPass.contentEquals(realVal)) {
-            AppLockService.passwordCorrect = true;
+            appElement.enteredPass = true;
+            AppDatabase appDatabase = new AppDatabase(null);
+            appDatabase.updateElement(appElement);
+//            AppLockService.passwordCorrect = true;
             finish();
             return;
         }
-        AppLockService.passwordCorrect = false;
+//        AppLockService.passwordCorrect = false;
         Toast.makeText(getApplicationContext(), "Password is wrong!", Toast.LENGTH_SHORT).show();
     }
 
