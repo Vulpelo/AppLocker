@@ -25,7 +25,7 @@
     <string name="old_password">Old password</string>
     <string name="confirm">Confirm</string>
     <string name="language_title">Language</string>
-    <string name="requireAfterClose">Require password after app close</string>
+    <string name="requireAfterClose">Lock again after screen off/app close</string>
     <string name="passwordProtect">Protect with password</string>
     <string name="enterPassword">Enter password</string>
     <string name="settings">Settings</string>
