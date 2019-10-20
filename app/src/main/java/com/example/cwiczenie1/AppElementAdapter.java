@@ -1,18 +1,16 @@
 package com.example.cwiczenie1;
 
 import android.content.Context;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.Switch;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.example.cwiczenie1.database.ResetWhen;
 
 import java.util.ArrayList;
 
@@ -25,20 +23,16 @@ public class AppElementAdapter extends ArrayAdapter<AppElement> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        // Get the data item for this position
+
         AppElement appElement = getItem(position);
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.app_element_row, parent, false);
         }
 
-        // Lookup view for data population
         TextView appName = (TextView) convertView.findViewById(R.id.app_name);
+        appName.setText(appElement.appName);
 
-        // Populate the data into the template view using the data object
-        appName.setText(appElement.name);
 
-        // Return the completed view to render on screen
         return convertView;
     }
 }

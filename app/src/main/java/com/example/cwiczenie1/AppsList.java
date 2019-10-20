@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -75,6 +77,11 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
                 Switch protectedSwitch = fragment.findViewById(R.id.protectedSwitch);
                 CheckBox passAfterClose = (CheckBox) fragment.findViewById(R.id.requireAfterCloseCheckBox);
 
+                if (appElement.appImage != null) {
+                    ImageView imageView = (ImageView) fragment.findViewById(R.id.appImageView);
+                    imageView.setImageDrawable(appElement.appImage);
+                }
+
                 protectedSwitch.setChecked(appElement.isProtected);
                 appFragmentName.setText(appElement.name);
                 passAfterClose.setChecked( appElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0);
@@ -121,8 +128,17 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 
             if (appElement == null) {
                 appElement = new AppElement(appInfo.processName);
+                appElement.appName = appInfo.processName;
                 appElement.id = appDatabase.insertElement(appElement);
             }
+            appElement.appName = appInfo.loadLabel(pm).toString();
+            try {
+                Drawable icon = pm.getApplicationIcon(appElement.name);
+                appElement.appImage = icon;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+
             adapter.add(appElement);
         }
     }
