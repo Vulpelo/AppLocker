@@ -185,8 +185,6 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
         appDatabase.updateElement(mAppElement);
     }
 
-
-
     private List<ApplicationInfo> getAppsOnPhone() {
         List<ApplicationInfo> installedApps = new ArrayList<ApplicationInfo>();
         for(ApplicationInfo app : apps) {
