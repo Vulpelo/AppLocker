@@ -1,7 +1,6 @@
 package com.example.cwiczenie1;
 
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 
 import com.example.cwiczenie1.database.ResetWhen;
 

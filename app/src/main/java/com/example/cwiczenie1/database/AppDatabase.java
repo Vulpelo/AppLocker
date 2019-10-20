@@ -2,10 +2,8 @@ package com.example.cwiczenie1.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.example.cwiczenie1.AppElement;
 
@@ -97,7 +95,7 @@ public class AppDatabase {
         db.update(
                 "APPS",
                 values,
-                " RESET_WHEN = ?",
+                null,
                 null);
     }
 

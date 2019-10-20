@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import com.example.cwiczenie1.AppElement;
 import com.example.cwiczenie1.PasswordEnter;
@@ -27,8 +26,6 @@ public class AppLockService extends Service {
     private TimerTask timerTask;
     Intent activityChangeIntent;
 
-    String lastToLockApp = "";
-    public static boolean passwordCorrect = false;
     boolean lockDialogNotOpened = true;
 
     private static String packageName;
@@ -37,7 +34,6 @@ public class AppLockService extends Service {
     private AppLockerDbHelper dbHelper;
 
     public static AppElement appActualToLockElement = new AppElement("none");
-    public static AppElement appPreviousToLockElement = new AppElement("none");
 
     private class LockerTask extends TimerTask {
         @Override

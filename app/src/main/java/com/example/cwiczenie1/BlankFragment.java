@@ -12,13 +12,8 @@ import androidx.fragment.app.Fragment;
 
 
 public class BlankFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "appElement";
 
-    private AppElement mAppElement;
-
-    private OnFragmentInteractionListener mListener;
 
     public BlankFragment() {
         // Required empty public constructor
@@ -36,9 +31,6 @@ public class BlankFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mAppElement = (AppElement) getArguments().getSerializable(ARG_PARAM1);
-        }
     }
 
     @Override
@@ -57,7 +49,6 @@ public class BlankFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -67,11 +58,9 @@ public class BlankFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 }

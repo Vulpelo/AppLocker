@@ -8,13 +8,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,8 +18,6 @@ import android.widget.Toast;
 
 import com.example.cwiczenie1.Services.AppLockService;
 import com.example.cwiczenie1.database.AppDatabase;
-
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        AppDatabase appDatabase = new AppDatabase(this);
+        new AppDatabase(this);
 
         // Starting lock service
         Intent service = new Intent(this, AppLockService.class);

@@ -33,11 +33,9 @@ public class PasswordEnter extends AppCompatActivity {
             appElement.enteredPass = true;
             AppDatabase appDatabase = new AppDatabase(null);
             appDatabase.updateElement(appElement);
-//            AppLockService.passwordCorrect = true;
             finish();
             return;
         }
-//        AppLockService.passwordCorrect = false;
         Toast.makeText(getApplicationContext(), "Password is wrong!", Toast.LENGTH_SHORT).show();
     }
 
