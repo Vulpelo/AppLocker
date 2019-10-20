@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.util.Log;
@@ -44,6 +45,99 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 
     int appElementSelected = 0;
 
+    // param1 - Context
+    // param2 - Adapter
+    private class LoadAppsTask extends AsyncTask<Object, Integer, String> {
+        Context context;
+        AppElementAdapter adapter;
+
+        @Override
+        protected String doInBackground(Object... params) {
+            context = (Context) params[0];
+            adapter = (AppElementAdapter) params[1];
+
+            List<ApplicationInfo> installedApps = getAppsOnPhone();
+            updateAppElementsAdapterWithDb(context, adapter, installedApps);
+
+            AppDatabase appDatabase = new AppDatabase(context);
+
+            for (ApplicationInfo appInfo: installedApps) {
+                AppElement appElement = appDatabase.getByName(appInfo.processName);
+
+                if (appElement == null) {
+                    appElement = new AppElement(appInfo.processName);
+                    appElement.appName = appInfo.processName;
+                    appElement.id = appDatabase.insertElement(appElement);
+                }
+                appElement.appName = appInfo.loadLabel(pm).toString();
+                try {
+                    Drawable icon = pm.getApplicationIcon(appElement.name);
+                    appElement.appImage = icon;
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                adapter.add(appElement);
+            }
+            return "ok";
+        }
+
+        private void updateAppElementsAdapterWithDb(Context context, AppElementAdapter adapter, List<ApplicationInfo> installedApps) {
+            AppDatabase appDatabase = new AppDatabase(context);
+
+            for (ApplicationInfo appInfo: installedApps) {
+                AppElement appElement = appDatabase.getByName(appInfo.processName);
+
+                if (appElement == null) {
+                    appElement = new AppElement(appInfo.processName);
+                    appElement.appName = appInfo.processName;
+                    appElement.id = appDatabase.insertElement(appElement);
+                }
+                appElement.appName = appInfo.loadLabel(pm).toString();
+                try {
+                    Drawable icon = pm.getApplicationIcon(appElement.name);
+                    appElement.appImage = icon;
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                adapter.add(appElement);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            ListView listView = (ListView) findViewById(R.id.listViewApps);
+            listView.setAdapter(adapter);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    appElementSelected = position;
+                    AppElement appElement = adapter.getItem(position);
+
+                    getSupportFragmentManager().beginTransaction().replace(R.id.appFragment, BlankFragment.newInstance(appElement));
+
+                    View fragment = findViewById(R.id.appFragment);
+
+                    TextView appFragmentName = fragment.findViewById(R.id.appFragmentName);
+                    Switch protectedSwitch = fragment.findViewById(R.id.protectedSwitch);
+                    CheckBox passAfterClose = (CheckBox) fragment.findViewById(R.id.requireAfterCloseCheckBox);
+
+                    if (appElement.appImage != null) {
+                        ImageView imageView = (ImageView) fragment.findViewById(R.id.appImageView);
+                        imageView.setImageDrawable(appElement.appImage);
+                    }
+
+                    protectedSwitch.setChecked(appElement.isProtected);
+                    appFragmentName.setText(appElement.name);
+                    passAfterClose.setChecked( appElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0);
+                }
+            });
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,41 +151,12 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
         appElementArrayList = new ArrayList<>();
         adapter = new AppElementAdapter(this, appElementArrayList);
 
-        List<ApplicationInfo> installedApps = getAppsOnPhone();
-        updateAppElementsAdapterWithDb(adapter, installedApps);
-
-        ListView listView = (ListView) findViewById(R.id.listViewApps);
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                appElementSelected = position;
-                AppElement appElement = adapter.getItem(position);
-
-                getSupportFragmentManager().beginTransaction().replace(R.id.appFragment, BlankFragment.newInstance(appElement));
-
-                View fragment = findViewById(R.id.appFragment);
-
-                TextView appFragmentName = fragment.findViewById(R.id.appFragmentName);
-                Switch protectedSwitch = fragment.findViewById(R.id.protectedSwitch);
-                CheckBox passAfterClose = (CheckBox) fragment.findViewById(R.id.requireAfterCloseCheckBox);
-
-                if (appElement.appImage != null) {
-                    ImageView imageView = (ImageView) fragment.findViewById(R.id.appImageView);
-                    imageView.setImageDrawable(appElement.appImage);
-                }
-
-                protectedSwitch.setChecked(appElement.isProtected);
-                appFragmentName.setText(appElement.name);
-                passAfterClose.setChecked( appElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0);
-            }
-        });
+        Object[] params = { this,  adapter };
+        new LoadAppsTask().execute(params);
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-        Toast.makeText(getBaseContext(), "O hej00", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -120,28 +185,7 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
         appDatabase.updateElement(mAppElement);
     }
 
-    private void updateAppElementsAdapterWithDb(AppElementAdapter adapter, List<ApplicationInfo> installedApps) {
-        AppDatabase appDatabase = new AppDatabase(this);
 
-        for (ApplicationInfo appInfo: installedApps) {
-            AppElement appElement = appDatabase.getByName(appInfo.processName);
-
-            if (appElement == null) {
-                appElement = new AppElement(appInfo.processName);
-                appElement.appName = appInfo.processName;
-                appElement.id = appDatabase.insertElement(appElement);
-            }
-            appElement.appName = appInfo.loadLabel(pm).toString();
-            try {
-                Drawable icon = pm.getApplicationIcon(appElement.name);
-                appElement.appImage = icon;
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            adapter.add(appElement);
-        }
-    }
 
     private List<ApplicationInfo> getAppsOnPhone() {
         List<ApplicationInfo> installedApps = new ArrayList<ApplicationInfo>();
