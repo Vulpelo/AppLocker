@@ -112,7 +112,7 @@ public class AppDatabase {
         db.update(
                 "APPS",
                 values,
-                " RESET_WHEN = ?",
+                null,
                 null);
     }
 }
