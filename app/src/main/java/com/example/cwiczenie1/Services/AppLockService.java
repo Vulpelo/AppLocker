@@ -14,6 +14,7 @@ import com.example.cwiczenie1.AppElement;
 import com.example.cwiczenie1.PasswordEnter;
 import com.example.cwiczenie1.database.AppDatabase;
 import com.example.cwiczenie1.database.AppLockerDbHelper;
+import com.example.cwiczenie1.database.ResetWhen;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -30,31 +31,60 @@ public class AppLockService extends Service {
     public static boolean passwordCorrect = false;
     boolean lockDialogNotOpened = true;
 
+    private static String packageName;
     private final BroadcastReceiver mResetDatabaseReceiver;
 
     private AppLockerDbHelper dbHelper;
 
-    public static AppElement appActualToLockElement;
+    public static AppElement appActualToLockElement = new AppElement("none");
+    public static AppElement appPreviousToLockElement = new AppElement("none");
 
     private class LockerTask extends TimerTask {
         @Override
         public void run() {
             String currentToLockForegroundProcess  = currentInForeground();
-            if (!currentToLockForegroundProcess .isEmpty() && appToBeLocked(currentToLockForegroundProcess )) {
-                // not the same foreground app so reset
-                AppDatabase appDatabase = new AppDatabase(null);
-                appActualToLockElement = appDatabase.getByName(currentToLockForegroundProcess);
+            if (!currentToLockForegroundProcess.isEmpty()) {
+                AppDatabase appDatabase = new AppDatabase(getApplicationContext());
 
-                // the same app or different app
-                // password wasn't entered correctly last time for given app
-                if (!appActualToLockElement.enteredPass) {
-                    if (lockDialogNotOpened) {
-                        lockDialogNotOpened = false;
-                        startActivity(activityChangeIntent);
-                    }
-                } else {
+                if (!currentToLockForegroundProcess.equals(packageName)) {
                     lockDialogNotOpened = true;
+                    // reset all besides opened one
+                    AppElement appToLockElementTmp = appDatabase.getByName(currentToLockForegroundProcess);
+                    appDatabase.resetEnteredPasswordWhen(ResetWhen.ON_CLOSE);
+                    if (appToLockElementTmp != null) {
+                        appDatabase.updateElement(appToLockElementTmp);
+                    }
+
+
+                    if (appToBeLocked(currentToLockForegroundProcess)) {
+                        appActualToLockElement = appToLockElementTmp;
+                        // not the same foreground app so reset
+//                        appToLockElementTmp = appDatabase.getByName(currentToLockForegroundProcess);
+
+                        // foreground app has changed
+//                        if (!appToLockElementTmp.name.equals(appPreviousToLockElement.name)) {
+//                            if (appPreviousToLockElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0) {
+//                                appPreviousToLockElement.enteredPass = false;
+//                                appDatabase.updateElement(appPreviousToLockElement);
+//                            }
+//                            // update actual app
+//                            appPreviousToLockElement = appActualToLockElement;
+//                            appActualToLockElement = appToLockElementTmp;
+//                        }
+
+                        // the same app or different app
+                        // password wasn't entered correctly last time for given app
+                        if (!appActualToLockElement.enteredPass) {
+                            if (lockDialogNotOpened) {
+                                lockDialogNotOpened = false;
+                                startActivity(activityChangeIntent);
+                            }
+                        } else {
+                            lockDialogNotOpened = true;
+                        }
+                    }
                 }
+
             } else {
                 lockDialogNotOpened = true;
             }
@@ -111,6 +141,8 @@ public class AppLockService extends Service {
         activityChangeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         dbHelper = new AppLockerDbHelper(getBaseContext());
+
+        packageName = getApplicationContext().getPackageName();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);

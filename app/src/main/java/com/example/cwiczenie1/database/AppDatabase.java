@@ -74,6 +74,21 @@ public class AppDatabase {
         return db.insert("APPS", null, values);
     }
 
+    // Resets if nessessary
+    public void resetEnteredPasswordWhen(ResetWhen resetWhen) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("ENTERED_PASS", 0);
+        String[] selectionArgs = { String.valueOf( resetWhen.ordinal() ) };
+
+        db.update(
+                "APPS",
+                values,
+                " RESET_WHEN = ?",
+                selectionArgs);
+    }
+
     public void resetEnteredPassword() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -82,7 +97,7 @@ public class AppDatabase {
         db.update(
                 "APPS",
                 values,
-                null,
+                " RESET_WHEN = ?",
                 null);
     }
 }

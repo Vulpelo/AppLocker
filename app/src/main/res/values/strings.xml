@@ -27,4 +27,5 @@
     <string name="old_password">Old password</string>
     <string name="confirm">Confirm</string>
     <string name="language_title">Language</string>
+    <string name="requireAfterClose">Require password after app close</string>
 </resources>

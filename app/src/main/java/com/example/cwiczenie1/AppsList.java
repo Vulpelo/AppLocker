@@ -15,6 +15,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import com.example.cwiczenie1.database.AppDatabase;
 import com.example.cwiczenie1.database.AppLockerDbHelper;
+import com.example.cwiczenie1.database.ResetWhen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,9 +73,11 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 
                 TextView appFragmentName = fragment.findViewById(R.id.appFragmentName);
                 Switch protectedSwitch = fragment.findViewById(R.id.protectedSwitch);
+                CheckBox passAfterClose = (CheckBox) fragment.findViewById(R.id.requireAfterCloseCheckBox);
 
                 protectedSwitch.setChecked(appElement.isProtected);
                 appFragmentName.setText(appElement.name);
+                passAfterClose.setChecked( appElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0);
             }
         });
     }
@@ -94,6 +98,16 @@ public class AppsList extends FragmentActivity implements BlankFragment.OnFragme
 
         AppElement mAppElement = adapter.getItem(appElementSelected);
         mAppElement.isProtected = aSwitch.isChecked();
+
+        AppDatabase appDatabase = new AppDatabase(this);
+        appDatabase.updateElement(mAppElement);
+    }
+
+    public void onLockCheckBoxChange(View view) {
+        CheckBox aCheckBox = (CheckBox)view;
+
+        AppElement mAppElement = adapter.getItem(appElementSelected);
+        mAppElement.resetWhen = aCheckBox.isChecked() ? ResetWhen.ON_CLOSE : ResetWhen.SCREEN_OFF;
 
         AppDatabase appDatabase = new AppDatabase(this);
         appDatabase.updateElement(mAppElement);
