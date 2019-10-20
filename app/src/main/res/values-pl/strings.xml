@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="confirm">Potwierdź</string>
+    <string name="general_header">Generalne</string>
+    <string name="language_title">Język</string>
+    <string name="messages_header">Wiadomości</string>
+    <string name="new_password">Nowe hasło</string>
+    <string name="old_password">Stare hasło</string>
+    <string name="re_new_password">Powtórz nowe hasło</string>
+    <string name="requireAfterClose">Wymagaj hasła po zamknięciu</string>
+    <string name="password_title">Ustaw nowe hasło</string>
+    <string name="set_new_password">Ustaw nowe hasło</string>
+    <string name="title_activity_settings">Ustawienia</string>
+    <string name="passwordProtect">Chroń hasłem</string>
+    <string name="enterPassword">Wprowadź hasło</string>
+    <string name="lockedApps">Chroń aplikacje</string>
+    <string name="settings">Ustawienia</string>
+    <string name="reset">Resetuj</string>
+    <string name="other">Inne</string>
+    <string name="signature_title">Twój podpis</string>
+    <string name="sync_header">Synchronizuj</string>
+    <string name="sync_title">Synchronizuj pocztę czasowo</string>
+    <string name="attachment_title">Pobierz załączniki</string>
+    <string name="attachment_summary_on">Automatycznie pobierz załączniki</string>
+    <string name="attachment_summary_off">Pobierz załączniki tylko gdy zarządano</string>
+    <string name="reseted">Ustawienia blokowanych aplikacji zresetowane</string>
+    <string name="no">Nie</string>
+    <string name="yes">Tak</string>
+    <string name="confirmReset">Jesteś pewny że chcesz zresetować ustawienia blokowanych aplikacji?</string>
+</resources>

@@ -18,32 +18,29 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
 
-            android:layout_weight="100"
+            android:layout_weight="99"
             app:srcCompat="@drawable/thread_lock" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="50"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/buttonLockApps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
                 android:text="@string/lockedApps" />
 
             <Button
                 android:id="@+id/changePasswordButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
                 android:onClick="setNewPasswordButton"
                 android:text="@string/set_new_password" />
 
@@ -51,7 +48,6 @@
                 android:id="@+id/buttonSettings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
                 android:text="@string/settings" />
 
         </LinearLayout>

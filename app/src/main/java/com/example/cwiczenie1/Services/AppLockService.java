@@ -55,25 +55,9 @@ public class AppLockService extends Service {
                         appDatabase.updateElement(appToLockElementTmp);
                     }
 
-
                     if (appToBeLocked(currentToLockForegroundProcess)) {
                         appActualToLockElement = appToLockElementTmp;
-                        // not the same foreground app so reset
-//                        appToLockElementTmp = appDatabase.getByName(currentToLockForegroundProcess);
 
-                        // foreground app has changed
-//                        if (!appToLockElementTmp.name.equals(appPreviousToLockElement.name)) {
-//                            if (appPreviousToLockElement.resetWhen.compareTo(ResetWhen.ON_CLOSE) == 0) {
-//                                appPreviousToLockElement.enteredPass = false;
-//                                appDatabase.updateElement(appPreviousToLockElement);
-//                            }
-//                            // update actual app
-//                            appPreviousToLockElement = appActualToLockElement;
-//                            appActualToLockElement = appToLockElementTmp;
-//                        }
-
-                        // the same app or different app
-                        // password wasn't entered correctly last time for given app
                         if (!appActualToLockElement.enteredPass) {
                             if (lockDialogNotOpened) {
                                 lockDialogNotOpened = false;

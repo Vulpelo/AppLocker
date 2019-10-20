@@ -100,4 +100,19 @@ public class AppDatabase {
                 " RESET_WHEN = ?",
                 null);
     }
+
+    public void resetToDefault() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("ENTERED_PASS", 0);
+        values.put("RESET_WHEN", 0);
+        values.put("PROTECTED", 0);
+
+        db.update(
+                "APPS",
+                values,
+                " RESET_WHEN = ?",
+                null);
+    }
 }

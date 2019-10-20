@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/app_name" />
+                android:text="__________" />
 
         </LinearLayout>
 
@@ -49,7 +49,7 @@
                 android:checked="false"
                 android:clickable="true"
                 android:onClick="onProtectedSwitchChange"
-                android:text="Password protect"
+                android:text="@string/passwordProtect"
                 tools:checked="false" />
 
         </LinearLayout>
